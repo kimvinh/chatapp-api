@@ -24,7 +24,7 @@ const session = require('express-session');
 const MongoDBStore = require('connect-mongodb-session')(session);
 
 app.use(cors({
-    origin: ['https://chatapp-api-kkfv.onrender.com', 'https://chatapp-e5ar.onrender.com'],
+    origin: ['https://chatapp-e5ar.onrender.com'],
     methods: ['GET', 'POST', 'DELETE', 'PUT', 'PATCH'],
     credentials: true
 }));
@@ -276,6 +276,7 @@ app.use(session({
     saveUninitialized: false,
     cookie: {
         maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        sameSite: "none"
     },
     store: store
 }));
