@@ -43,7 +43,7 @@ app.use(cors({
 
 const io = new Server(server, {
     cors: {
-        origin: ['https://chatapp-api-kkfv.onrender.com', 'https://chatapp-e5ar.onrender.com'],
+        origin: ['https://chatapp-api-kkfv.onrender.com:3001/', 'https://chatapp-e5ar.onrender.com'],
         methods: ['GET', 'POST', 'DELETE', 'PUT', 'PATCH']
     }
 });
