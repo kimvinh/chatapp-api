@@ -23,6 +23,12 @@ const cookieParser = require('cookie-parser');
 const session = require('express-session');
 const MongoDBStore = require('connect-mongodb-session')(session);
 
+app.use(cors({
+    origin: ['https://chatapp-api-kkfv.onrender.com', 'https://chatapp-e5ar.onrender.com'],
+    methods: ['GET', 'POST', 'DELETE', 'PUT', 'PATCH'],
+    credentials: true
+}));
+
 const store = new MongoDBStore({
     uri: 'mongodb+srv://Vincent:kimVINH7991@cluster0.zr51e2p.mongodb.net/chat_app?retryWrites=true&w=majority',
     collection: 'sessions', // Collection to store sessions
@@ -40,12 +46,6 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage: storage })
-
-app.use(cors({
-    origin: ['https://chatapp-api-kkfv.onrender.com', 'https://chatapp-e5ar.onrender.com'],
-    methods: ['GET', 'POST', 'DELETE', 'PUT', 'PATCH'],
-    credentials: true
-}));
 
 const io = new Server(server, {
     cors: {
@@ -361,6 +361,7 @@ app.post('/users/login', (req, res) => {
                 bcrypt.compare(password, document.password, (err, response) => {
                     if (response) {
                         req.session.user = document;
+                        console.log(req.session.user);
                         res.status(200).json({ message: 'Login Successfully' })
                     } else {
                         res.status(401).json({ message: 'Incorrect Password'})
