@@ -36,6 +36,25 @@ const store = new MongoDBStore({
     collection: 'sessions', // Collection to store sessions
 });
 
+app.use(cookieParser());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+store.on('error', (error) => {
+    console.error('Session store error:', error);
+});
+
+app.use(session({
+    secret: "your-session-secret",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        sameSite: "none",
+        secure: true
+    },
+    store: store
+}));
+
 const server = http.createServer(app);
 
 const storage = multer.diskStorage({
@@ -265,23 +284,7 @@ io.on("connection", (socket) => {
     })
 });
 
-app.use(cookieParser());
-app.use(bodyParser.urlencoded({ extended: true }));
 
-store.on('error', (error) => {
-    console.error('Session store error:', error);
-});
-
-app.use(session({
-    secret: "your-session-secret",
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-        maxAge: 24 * 60 * 60 * 1000, // 24 hours
-        sameSite: "none"
-    },
-    store: store
-}));
 
 // Helper function to calculate the remaining time until the end of the day
 function getRemainingTimeUntilEndOfDay() {
