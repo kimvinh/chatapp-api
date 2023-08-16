@@ -50,7 +50,8 @@ const upload = multer({ storage: storage })
 const io = new Server(server, {
     cors: {
         origin: ['https://chatapp-e5ar.onrender.com'],
-        methods: ['GET', 'POST', 'DELETE', 'PUT', 'PATCH']
+        methods: ['GET', 'POST', 'DELETE', 'PUT', 'PATCH'],
+        credentials: true
     }
 });
 
@@ -270,14 +271,14 @@ store.on('error', (error) => {
 });
 
 app.use(session({
-    secret: "your-section-secret",
+    secret: "your-session-secret",
     resave: false,
     saveUninitialized: false,
     cookie: {
-        maxAge: getRemainingTimeUntilEndOfDay(),
+        maxAge: 24 * 60 * 60 * 1000, // 24 hours
     },
     store: store
-}))
+}));
 
 // Helper function to calculate the remaining time until the end of the day
 function getRemainingTimeUntilEndOfDay() {
@@ -340,6 +341,7 @@ app.post('/users/login', (req, res) => {
                 bcrypt.compare(password, document.password, (err, response) => {
                     if (response) {
                         req.session.user = document;
+                        console.log(req.session.user);
                         res.status(200).json({ message: 'Login Successfully' })
                     } else {
                         res.status(401).json({ message: 'Incorrect Password'})
