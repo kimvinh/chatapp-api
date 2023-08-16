@@ -306,6 +306,7 @@ connectToDatabase((err) => {
 
 // Routes
 app.get('/', (req, res) => {
+    console.log(req.session.user);
     if (req.session.user) {
         const userId = req.session.user._id;
         
