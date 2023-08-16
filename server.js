@@ -307,7 +307,7 @@ connectToDatabase((err) => {
 
 // Routes
 app.get('/', (req, res) => {
-    console.log(req.session.user);
+    console.log(req.session);
     if (req.session.user) {
         res.send({
             loggedIn: true,
