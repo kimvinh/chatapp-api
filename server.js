@@ -308,35 +308,14 @@ connectToDatabase((err) => {
 app.get('/', (req, res) => {
     console.log(req.session.user);
     if (req.session.user) {
-        const userId = req.session.user._id;
-        
-        // Convert userId to ObjectId if it's not already
-        const userIdObject = typeof userId === 'string' ? new ObjectId(userId) : userId;
-
-        db.collection('users')
-            .findOne({ _id: userIdObject })
-            .then((result) => {
-                if (result) {
-                    // Update the session data with the retrieved user
-                    req.session.user = result;
-                    res.send({
-                        loggedIn: true,
-                        user: result
-                    });
-                } else {
-                    // User not found in the database
-                    req.session.destroy(); // Clear the session
-                    res.send({ loggedIn: false });
-                }
-            })
-            .catch((error) => {
-                console.error('Error fetching user data:', error);
-                res.status(500).json({ error: 'Internal server error' });
-            });
+        res.send({
+            loggedIn: true,
+            user: req.session.user  // Use the session data directly
+        });
     } else {
         res.send({ loggedIn: false });
     }
-})
+});
 
 app.get('/users', (req, res) => {
     let users = [];
@@ -361,7 +340,6 @@ app.post('/users/login', (req, res) => {
                 bcrypt.compare(password, document.password, (err, response) => {
                     if (response) {
                         req.session.user = document;
-                        console.log(req.session.user);
                         res.status(200).json({ message: 'Login Successfully' })
                     } else {
                         res.status(401).json({ message: 'Incorrect Password'})
