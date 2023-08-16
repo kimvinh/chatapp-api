@@ -21,6 +21,12 @@ const saltRounds = 10;
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
+const MongoDBStore = require('connect-mongodb-session')(session);
+
+const store = new MongoDBStore({
+    uri: 'mongodb+srv://Vincent:kimVINH7991@cluster0.zr51e2p.mongodb.net/chat_app?retryWrites=true&w=majority',
+    collection: 'sessions', // Collection to store sessions
+});
 
 const server = http.createServer(app);
 
@@ -259,14 +265,18 @@ io.on("connection", (socket) => {
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+store.on('error', (error) => {
+    console.error('Session store error:', error);
+});
+
 app.use(session({
-    key: "token",
-    secret: "testing",
+    secret: "your-section-secret",
     resave: false,
     saveUninitialized: false,
     cookie: {
         maxAge: getRemainingTimeUntilEndOfDay(),
-    }
+    },
+    store: store
 }))
 
 // Helper function to calculate the remaining time until the end of the day
