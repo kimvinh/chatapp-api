@@ -36,14 +36,14 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage })
 
 app.use(cors({
-    origin: ['https://chatapp-api-kkfv.onrender.com'],
+    origin: ['http://chatapp-api-kkfv.onrender.com'],
     methods: ['GET', 'POST', 'DELETE', 'PUT', 'PATCH'],
     credentials: true
 }));
 
 const io = new Server(server, {
     cors: {
-        origin: ['https://chatapp-api-kkfv.onrender.com'],
+        origin: ['http://chatapp-api-kkfv.onrender.com'],
         methods: ['GET', 'POST', 'DELETE', 'PUT', 'PATCH']
     }
 });
