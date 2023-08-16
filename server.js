@@ -341,7 +341,7 @@ app.post('/users/login', (req, res) => {
                 bcrypt.compare(password, document.password, (err, response) => {
                     if (response) {
                         req.session.user = document;
-                        console.log(req.session.user);
+                        console.log(req.session);
                         res.status(200).json({ message: 'Login Successfully' })
                     } else {
                         res.status(401).json({ message: 'Incorrect Password'})
