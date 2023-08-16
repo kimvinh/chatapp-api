@@ -23,6 +23,8 @@ const cookieParser = require('cookie-parser');
 const session = require('express-session');
 const MongoDBStore = require('connect-mongodb-session')(session);
 
+app.set("trust proxy", 1);
+
 app.use(cors({
     origin: ['https://chatapp-e5ar.onrender.com'],
     methods: ['GET', 'POST', 'DELETE', 'PUT', 'PATCH'],
