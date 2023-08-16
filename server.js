@@ -307,17 +307,33 @@ connectToDatabase((err) => {
 // Routes
 app.get('/', (req, res) => {
     if (req.session.user) {
+        const userId = req.session.user._id;
+        
+        // Convert userId to ObjectId if it's not already
+        const userIdObject = typeof userId === 'string' ? new ObjectId(userId) : userId;
+
         db.collection('users')
-            .findOne({ _id: new ObjectId(req.session.user._id) })
+            .findOne({ _id: userIdObject })
             .then((result) => {
-                req.session.user = result;
-                res.send({
-                    loggedIn: true,
-                    user: result
-                });
+                if (result) {
+                    // Update the session data with the retrieved user
+                    req.session.user = result;
+                    res.send({
+                        loggedIn: true,
+                        user: result
+                    });
+                } else {
+                    // User not found in the database
+                    req.session.destroy(); // Clear the session
+                    res.send({ loggedIn: false });
+                }
+            })
+            .catch((error) => {
+                console.error('Error fetching user data:', error);
+                res.status(500).json({ error: 'Internal server error' });
             });
     } else {
-        res.send({ loggedIn: false })
+        res.send({ loggedIn: false });
     }
 })
 
