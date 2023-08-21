@@ -23,6 +23,8 @@ const cookieParser = require('cookie-parser');
 const session = require('express-session');
 const MongoDBStore = require('connect-mongodb-session')(session);
 
+app.set("trust proxy", 1);
+
 const store = new MongoDBStore({
     uri: 'mongodb+srv://Vincent:kimVINH7991@cluster0.zr51e2p.mongodb.net/chat_app?retryWrites=true&w=majority',
     collection: 'sessions',
