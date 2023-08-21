@@ -408,7 +408,7 @@ app.delete('/users/:id', (req, res) => {
         db.collection('users')
             .deleteOne({ _id: new ObjectId(req.params.id) })
             .then((result) => {
-                res.status(200).json(result)
+                res.status(200).json(result);
             })
             .catch(err => {
                 res.status(500).json({ error: 'Could not delete the document' })
@@ -480,8 +480,9 @@ app.patch('/unfriend', async (req, res) => {
             { $set: { friends: updatedUserFriends }}
         )
 
-    user.friends = updatedUserFriends;
-    res.status(200).json({ user: user })
+    const updatedUser = await db.collection('users').findOne({ _id: new ObjectId(req.params.id) });
+    req.session.user = updatedUser;
+    res.status(200).json(updatedUser);
 })
 
 app.get('/conversation', (req, res) => {
