@@ -425,6 +425,11 @@ app.patch('/users/update/:id', (req, res) => {
         db.collection('users')
             .updateOne({ _id: new ObjectId(req.params.id) }, { $set: updates })
             .then((result) => {
+                db.collection('users')
+                    .findOne({ _id: new ObjectId(req.params.id) })
+                    .then((document) => {
+                        req.session.user = document;
+                    })
                 res.status(200).json(result);
             })
             .catch(err => {
