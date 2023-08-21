@@ -418,23 +418,15 @@ app.delete('/users/:id', (req, res) => {
     }
 });
 
-app.patch('/users/update/:id', (req, res) => {
+app.patch('/users/update/:id', async (req, res) => {
     const updates = req.body.userInfo;
     delete updates._id;
     if (ObjectId.isValid(req.params.id)) {
-        db.collection('users')
+        await db.collection('users')
             .updateOne({ _id: new ObjectId(req.params.id) }, { $set: updates })
-            .then((result) => {
-                db.collection('users')
-                    .findOne({ _id: new ObjectId(req.params.id) })
-                    .then((document) => {
-                        req.session.user = document;
-                    })
-                res.status(200).json(result);
-            })
-            .catch(err => {
-                res.status(500).json({ error: 'Could not delete the document' })
-            })
+
+        const response = await db.collection('users').findOne({ _id: new ObjectId(req.params.id) });
+        console.log(response.data);
     } else {
         res.status(500).json({ error: 'Not valid doc id' })
     }
