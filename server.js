@@ -59,7 +59,7 @@ app.use(session({
     cookie: {
         maxAge: getRemainingTimeUntilEndOfDay(),
         sameSite: "none",
-        secure: false
+        secure: true
     }
 }));
 
