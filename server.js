@@ -58,8 +58,8 @@ app.use(session({
     store: store,
     cookie: {
         maxAge: getRemainingTimeUntilEndOfDay(),
-        sameSite: "none",
-        secure: true
+        // sameSite: "none",
+        // secure: true
     }
 }));
 
@@ -425,8 +425,9 @@ app.patch('/users/update/:id', async (req, res) => {
         await db.collection('users')
             .updateOne({ _id: new ObjectId(req.params.id) }, { $set: updates })
 
-        const response = await db.collection('users').findOne({ _id: new ObjectId(req.params.id) });
-        console.log(response.data);
+        const updatedUser = await db.collection('users').findOne({ _id: new ObjectId(req.params.id) });
+        req.session.user = updatedUser;
+        res.status(200).json(updatedUser);
     } else {
         res.status(500).json({ error: 'Not valid doc id' })
     }
