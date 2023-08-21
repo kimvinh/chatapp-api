@@ -23,18 +23,16 @@ const cookieParser = require('cookie-parser');
 const session = require('express-session');
 const MongoDBStore = require('connect-mongodb-session')(session);
 
-app.set("trust proxy", 1);
+const store = new MongoDBStore({
+    uri: 'mongodb+srv://Vincent:kimVINH7991@cluster0.zr51e2p.mongodb.net/chat_app?retryWrites=true&w=majority',
+    collection: 'sessions',
+});
 
 app.use(cors({
-    origin: ['https://chatapp-e5ar.onrender.com'],
+    origin: ['https://chatapp-e5ar.onrender.com', 'http://192.168.1.211:3000'],
     methods: ['GET', 'POST', 'DELETE', 'PUT', 'PATCH'],
     credentials: true
 }));
-
-const store = new MongoDBStore({
-    uri: 'mongodb+srv://Vincent:kimVINH7991@cluster0.zr51e2p.mongodb.net/chat_app?retryWrites=true&w=majority',
-    collection: 'sessions', // Collection to store sessions
-});
 
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -43,16 +41,24 @@ store.on('error', (error) => {
     console.error('Session store error:', error);
 });
 
+// Helper function to calculate the remaining time until the end of the day
+function getRemainingTimeUntilEndOfDay() {
+    const now = new Date();
+    const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0);
+    const remainingTime = endOfDay - now;
+    return remainingTime;
+}
+
 app.use(session({
-    secret: "your-session-secret",
+    secret: 'your-session-secret',
     resave: false,
     saveUninitialized: false,
+    store: store,
     cookie: {
-        maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        maxAge: getRemainingTimeUntilEndOfDay(),
         sameSite: "none",
         secure: true
-    },
-    store: store
+    }
 }));
 
 const server = http.createServer(app);
@@ -67,7 +73,6 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage: storage })
-
 const io = new Server(server, {
     cors: {
         origin: ['https://chatapp-e5ar.onrender.com'],
@@ -284,16 +289,6 @@ io.on("connection", (socket) => {
     })
 });
 
-
-
-// Helper function to calculate the remaining time until the end of the day
-function getRemainingTimeUntilEndOfDay() {
-    const now = new Date();
-    const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0);
-    const remainingTime = endOfDay - now;
-    return remainingTime;
-}
-
 // Database Connection
 let db;
 
@@ -313,7 +308,6 @@ connectToDatabase((err) => {
 
 // Routes
 app.get('/', (req, res) => {
-    console.log(req.session);
     if (req.session.user) {
         res.send({
             loggedIn: true,
@@ -347,7 +341,6 @@ app.post('/users/login', (req, res) => {
                 bcrypt.compare(password, document.password, (err, response) => {
                     if (response) {
                         req.session.user = document;
-                        console.log(req.session);
                         res.status(200).json({ message: 'Login Successfully' })
                     } else {
                         res.status(401).json({ message: 'Incorrect Password'})
@@ -516,7 +509,7 @@ app.post('/conversation', (req, res) => {
 
 app.get('/conversations', async (req, res) => {
     if (req.session.user) {
-        const userID = req.session.user._id;
+        const userID = req.session.user._id.toString();
         const result = await db.collection('conversations').find({ 'participantsInfo.userID' : userID }).toArray();
         res.status(200).json(result);
     }
