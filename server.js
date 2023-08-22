@@ -58,8 +58,8 @@ app.use(session({
     store: store,
     cookie: {
         maxAge: getRemainingTimeUntilEndOfDay(),
-        sameSite: "none",
-        secure: true
+        // sameSite: "none",
+        // secure: true
     }
 }));
 
@@ -77,7 +77,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage })
 const io = new Server(server, {
     cors: {
-        origin: ['https://chatapp-e5ar.onrender.com'],
+        origin: ['https://chatapp-e5ar.onrender.com', 'http://192.168.1.211:3000'],
         methods: ['GET', 'POST', 'DELETE', 'PUT', 'PATCH'],
         credentials: true
     }
@@ -309,8 +309,10 @@ connectToDatabase((err) => {
 });
 
 // Routes
-app.get('/', (req, res) => {
+app.get('/', async (req, res) => {
     if (req.session.user) {
+        const response = await db.collection('users').findOne({ _id: new ObjectId(req.session.user._id.toString()) });
+        req.session.user = response;
         res.send({
             loggedIn: true,
             user: req.session.user  // Use the session data directly
@@ -456,10 +458,13 @@ app.get('/file/download/:filename', (req, res) => {
     res.download(filePath, originalFileName);
 })
 
-app.post('/addfriend', (req, res) => {
+app.post('/addfriend', async (req, res) => {
     const { userID, friendInfo } = req.body;
-    db.collection('users')
+    await db.collection('users')
         .updateOne({ _id: new ObjectId(userID) }, { $push: { friends: friendInfo }})
+
+    const updatedUser = await db.collection('users').findOne({ _id: new ObjectId(userID) });
+    req.session.user = updatedUser;
     res.json({ message: "Sent" })
 })
 
@@ -480,7 +485,11 @@ app.patch('/unfriend', async (req, res) => {
             { $set: { friends: updatedUserFriends }}
         )
 
-    const updatedUser = await db.collection('users').findOne({ _id: new ObjectId(req.params.id) });
+    await db.collection('conversations').deleteOne({
+            participants: { $all: [user._id, target.authorID] }
+        })
+
+    const updatedUser = await db.collection('users').findOne({ _id: new ObjectId(user._id) });
     req.session.user = updatedUser;
     res.status(200).json(updatedUser);
 })
