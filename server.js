@@ -322,6 +322,16 @@ app.get('/', async (req, res) => {
     }
 });
 
+app.get('/friend', async (req, res) => {
+    const { friendID } = req.query;
+    const response = await db.collection('users').findOne({ _id: new ObjectId(friendID) });
+    if (response) {
+        res.status(200).json(response);
+    } else {
+        res.status(500).json({ error: 'Could not fetch the document' })
+    }
+})
+
 app.get('/users', (req, res) => {
     let users = [];
     db.collection('users')
@@ -461,7 +471,7 @@ app.get('/file/download/:filename', (req, res) => {
 app.post('/addfriend', async (req, res) => {
     const { userID, friendInfo } = req.body;
     await db.collection('users')
-        .updateOne({ _id: new ObjectId(userID) }, { $push: { friends: friendInfo }})
+        .updateOne({ _id: new ObjectId(userID) }, { $push: { friends: { friendID: friendInfo } }})
 
     const updatedUser = await db.collection('users').findOne({ _id: new ObjectId(userID) });
     req.session.user = updatedUser;
@@ -531,6 +541,39 @@ app.patch('/update_conversation', (req, res) => {
         .then((result) => {
             res.status(200).json(result);
         })
+})
+
+app.patch('/api/conversation/update/:userID', async (req, res) => {
+    const { userID } = req.params;
+    const { updatedUser } = req.body;
+    const name = updatedUser.first_name + ' ' + updatedUser.last_name;
+    await db.collection('conversations')
+                            .updateMany(
+                                { "messages.authorID": userID },
+                                {
+                                    $set: {
+                                        "messages.$[message].authorName": name,
+                                        "messages.$[message].avatar": updatedUser.avatar
+                                    }
+                                },
+                                {
+                                    arrayFilters: [{ "message.authorID": userID }],
+                                }
+                            );
+    await db.collection('conversations')
+                            .updateMany(
+                                { "participantsInfo.userID": userID },
+                                {
+                                    $set: {
+                                        "participantsInfo.$[info].username": name,
+                                        "participantsInfo.$[info].avatar": updatedUser.avatar
+                                    }
+                                },
+                                {
+                                    arrayFilters: [{ "info.userID": userID }],
+                                }
+                            );
+    res.status(200).json({ message: 'Successfully'})
 })
 
 app.get('/get_messages', (req, res) => {
