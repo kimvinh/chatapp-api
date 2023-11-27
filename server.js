@@ -31,7 +31,7 @@ const store = new MongoDBStore({
 
 app.use(
   cors({
-    origin: ['https://chatapp-e5ar.onrender.com', 'http://192.168.1.211:3000'],
+    origin: ['http://localhost:3000'],
     methods: ['GET', 'POST', 'DELETE', 'PUT', 'PATCH'],
     credentials: true,
   })
@@ -68,8 +68,7 @@ app.use(
     store: store,
     cookie: {
       maxAge: getRemainingTimeUntilEndOfDay(),
-      sameSite: 'none',
-      secure: true,
+      secure: false,
     },
   })
 );
@@ -88,7 +87,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 const io = new Server(server, {
   cors: {
-    origin: ['https://chatapp-e5ar.onrender.com', 'http://192.168.1.211:3000'],
+    origin: ['http://localhost:3000'],
     methods: ['GET', 'POST', 'DELETE', 'PUT', 'PATCH'],
     credentials: true,
   },
