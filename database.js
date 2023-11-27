@@ -1,18 +1,18 @@
-const  { MongoClient } = require('mongodb');
+const { MongoClient } = require('mongodb');
 
 let databaseConnection;
 
 module.exports = {
-    connectToDatabase: (cb) => {
-        MongoClient.connect('mongodb+srv://Vincent:kimVINH7991@cluster0.zr51e2p.mongodb.net/chat_app?retryWrites=true&w=majority')
-            .then((client) => {
-                databaseConnection = client.db()
-                return cb()
-            })
-            .catch(err => {
-                console.log(err);
-                return cb(err)
-            })
-    },
-    getDatabase: () => databaseConnection
-}
+  connectToDatabase: (cb) => {
+    MongoClient.connect('mongodb://localhost:27017/chat_app')
+      .then((client) => {
+        databaseConnection = client.db();
+        return cb();
+      })
+      .catch((err) => {
+        console.log(err);
+        return cb(err);
+      });
+  },
+  getDatabase: () => databaseConnection,
+};
